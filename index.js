@@ -1,10 +1,11 @@
 var defaultSettings = {
-    authority: 'http://locahost:8080/auth/realms/test',
-    client_id: 'partner-public',
-    client_secret: '',
+    authority: 'http://localhost:4000/oidcp',
+    client_id: '6806bcd0-906d-46e4-86f3-9b3b3b962cb7',
+    client_secret: 'secret3',
     response_type: 'code',
-    scope: 'partner offline_access',
+    scope: 'openid userinfo profile org',
     redirect_uri: window.location.protocol + '//' + window.location.host,
+    logout_redirect_uri: window.location.protocol + '//' + window.location.host,
     token : false
 };
 
@@ -114,7 +115,7 @@ ${postBody}
                 .done(function (data) {
                     settings.token = data;
                     $('#response').val(JSON.stringify(data, null, '    '));
-                    $('#decoded-token').val(JSON.stringify(jwt_decode(data.access_token), null, '    '));
+                    $('#decoded-token').val(JSON.stringify(data.access_token, null, '    '));
                     saveSettingsInLocalStorage();
                 })
                 .fail(function (data, status, error) {
@@ -196,7 +197,7 @@ Request URL: ${requestURL}
 function logout() {
     var authParams = {
         client_id: settings.client_id,
-        redirect_uri: settings.redirect_uri,
+        post_logout_redirect_uri: settings.logout_redirect_uri,
         scope: settings.scope,
         response_type: settings.response_type
     }
@@ -260,12 +261,13 @@ function pullSettingsFromUI() {
   settings.response_type = $('#response_type').val();
   settings.scope = $('#scope').val();
   settings.redirect_uri = $('#redirect_uri').val();
+  settings.logout_redirect_uri = $('#logout_redirect_uri').val();
 
-  protocolUrl = settings.authority + '/protocol/openid-connect';
+  protocolUrl = settings.authority + '';
   tokenUrl = protocolUrl + '/token';
-  authUrl = protocolUrl + '/auth';
+  authUrl = protocolUrl + '/authorize';
   userInfoUrl = protocolUrl + '/userinfo';
-  logoutUrl = protocolUrl + '/logout';
+  logoutUrl = protocolUrl + '/session/end';
 }
 
 function loadSettingsIntoUI() {
@@ -275,9 +277,10 @@ function loadSettingsIntoUI() {
     $('#response_type').val(settings.response_type);
     $('#scope').val(settings.scope);
     $('#redirect_uri').val(settings.redirect_uri);
+    $('#logout_redirect_uri').val(settings.logout_redirect_uri);
     $('#app-setting-input').val(JSON.stringify(settings));
     if (settings.token) {
-      $('#decoded-token').val(JSON.stringify(jwt_decode(settings.token.access_token), null, '    '));
+      $('#decoded-token').val(JSON.stringify(settings.token.access_token, null, '    '));
     }
 }
 
